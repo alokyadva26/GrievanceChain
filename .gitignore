@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production / Builds
+build/
+dist/
+.next/
+out/
+
+# Hardhat / Blockchain
+artifacts/
+cache/
+typechain/
+typechain-types/
+contracts/hardhat-network-helpers/
+
+# ⚠️ SECRETS (MOST IMPORTANT) ⚠️
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS Files
+.DS_Store
+Thumbs.db
