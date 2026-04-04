@@ -6,7 +6,7 @@ async function main() {
   console.log("🚀 Deploying GrievanceChain contracts to", hre.network.name, "...\n");
 
   const [deployer] = await hre.ethers.getSigners();
-  
+
   if (!deployer) {
     console.error("❌ No deployer account found!");
     console.error("Please make sure you have added your PRIVATE_KEY to the .env file in the root directory.");
@@ -60,3 +60,6 @@ main()
     console.error("❌ Deployment failed:", error);
     process.exit(1);
   });
+
+
+// npx hardhat run scripts/deploy.js --network baseSepolia
