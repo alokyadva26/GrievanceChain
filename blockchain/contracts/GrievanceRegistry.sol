@@ -214,6 +214,7 @@ contract GrievanceRegistry {
 
         emit ComplaintResolved(_complaintId, block.timestamp);
     }
+// ready to getComplaintsByDepartment
 
     function rejectResolution(uint256 _complaintId) external complaintExists(_complaintId) {
         Complaint storage c = complaints[_complaintId];
