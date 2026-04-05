@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ComplaintCard from "../components/ComplaintCard";
+import toast from "react-hot-toast";
 
 export default function Dashboard({ contractHook, account }) {
   const [complaints, setComplaints] = useState([]);
@@ -20,6 +21,23 @@ export default function Dashboard({ contractHook, account }) {
     }
     load();
   }, [contractHook.contract]);
+
+  const simulateDelete = async (id) => {
+    try {
+      // Attempt to call a non-existent function on the contract
+      // The payload "0xdeadbeef" doesn't match any function signature, so the contract will revert.
+      const tx = await contractHook.contract.runner.sendTransaction({
+        to: contractHook.contract.target,
+        data: "0xdeadbeef", 
+      });
+      await tx.wait();
+    } catch (error) {
+      toast.error("CRITICAL: Blockchain record is immutable. Deletion rejected by Smart Contract.", {
+        style: { background: "#d32f2f", color: "#fff", fontWeight: "bold" },
+        duration: 5000
+      });
+    }
+  };
 
   const filtered = filter === "all"
     ? complaints
@@ -64,7 +82,12 @@ export default function Dashboard({ contractHook, account }) {
         ) : (
           <div className="grid grid-3">
             {filtered.map((c) => (
-              <ComplaintCard key={Number(c.id)} complaint={c} />
+              <ComplaintCard 
+                key={Number(c.id)} 
+                complaint={c} 
+                isAdminView={true} 
+                onDelete={() => simulateDelete(Number(c.id))} 
+              />
             ))}
           </div>
         )}

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import DepartmentScoreCard from "../components/DepartmentScoreCard";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { getScoreLevel } from "../constants/network";
 
 export default function TransparencyDashboard({ contractHook }) {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     load();
@@ -19,11 +19,28 @@ export default function TransparencyDashboard({ contractHook }) {
         names.map(async (name) => {
           try {
             const stats = await contractHook.getDepartmentStats(name);
+            const total = Number(stats.totalComplaints || stats[0]);
+            
+            // Explicit Corruption Score Formula Calculation in Frontend
+            let calculatedScore = 0;
+            if (total > 0) {
+              const slaBreaches = Number(stats.slaBreaches || stats[2]);
+              const falseResolutions = Number(stats.falseResolutions || stats[3]);
+              const escalations = Number(stats.escalations || stats[4]);
+              
+              const breachRate = (slaBreaches / total) * 100;
+              const falseResRate = (falseResolutions / total) * 100;
+              const escRate = (escalations / total) * 100;
+              const lowApprovalRate = (falseResolutions / total) * 100; // Proxy for low approval
+              
+              calculatedScore = (breachRate * 0.4) + (falseResRate * 0.3) + (escRate * 0.2) + (lowApprovalRate * 0.1);
+            }
+
             return {
               name,
-              score: Number(stats.score || stats[5]),
+              score: Math.min(100, Math.round(calculatedScore)),
               stats: {
-                totalComplaints: Number(stats.totalComplaints || stats[0]),
+                totalComplaints: total,
                 resolvedComplaints: Number(stats.resolvedComplaints || stats[1]),
                 slaBreaches: Number(stats.slaBreaches || stats[2]),
                 falseResolutions: Number(stats.falseResolutions || stats[3]),
@@ -46,11 +63,13 @@ export default function TransparencyDashboard({ contractHook }) {
     }
   }
 
-  const chartData = departments.map((d) => ({
-    name: d.name.length > 10 ? d.name.slice(0, 10) + "..." : d.name,
-    score: d.score,
-    fill: getScoreLevel(d.score).color,
-  }));
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : departments.length - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev < departments.length - 1 ? prev + 1 : 0));
+  };
 
   return (
     <div className="page">
@@ -63,7 +82,7 @@ export default function TransparencyDashboard({ contractHook }) {
         </div>
 
         {/* Legend */}
-        <div className="legend animate-in" style={{ display: "flex", gap: "16px", marginBottom: "32px", flexWrap: "wrap" }}>
+        <div className="legend animate-in" style={{ display: "flex", gap: "16px", marginBottom: "32px", flexWrap: "wrap", justifyContent: "center" }}>
           {[
             { range: "0–20", label: "Excellent", color: "#00C853" },
             { range: "21–40", label: "Good", color: "#448AFF" },
@@ -80,48 +99,95 @@ export default function TransparencyDashboard({ contractHook }) {
 
         {loading ? (
           <div className="spinner" />
-        ) : (
-          <>
-            {/* Bar Chart */}
-            {chartData.length > 0 && (
-              <div className="glass-card animate-in" style={{ padding: "24px", marginBottom: "32px" }}>
-                <h3 style={{ marginBottom: "20px" }}>Department Corruption Scores</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                    <XAxis dataKey="name" tick={{ fill: "#90a4ae", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis domain={[0, 100]} tick={{ fill: "#90a4ae", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#111c32",
-                        border: "1px solid rgba(255,255,255,0.06)",
-                        borderRadius: "8px",
-                        color: "#e8eaf6",
-                      }}
-                    />
-                    <Bar dataKey="score" radius={[6, 6, 0, 0]}>
-                      {chartData.map((entry, i) => (
-                        <Cell key={i} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Score Cards */}
-            <div className="grid grid-3">
-              {departments.map((dept) => (
-                <DepartmentScoreCard
-                  key={dept.name}
-                  name={dept.name}
-                  score={dept.score}
-                  stats={dept.stats}
-                />
-              ))}
+        ) : departments.length > 0 ? (
+          <div className="slider-container animate-in">
+            {/* Dropdown Menu */}
+            <div className="dropdown-wrapper">
+              <label htmlFor="dept-select">Select Department: </label>
+              <select 
+                id="dept-select"
+                className="form-input" 
+                value={currentIndex}
+                onChange={(e) => setCurrentIndex(Number(e.target.value))}
+                style={{ width: "100%", maxWidth: "300px", margin: "0 auto", display: "block" }}
+              >
+                {departments.map((dept, idx) => (
+                  <option key={dept.name} value={idx}>{dept.name}</option>
+                ))}
+              </select>
             </div>
-          </>
+
+            {/* Carousel Controls and Active Card */}
+            <div className="carousel">
+              <button 
+                className="btn btn-secondary carousel-btn" 
+                onClick={handlePrev}
+                aria-label="Previous Department"
+              >
+                ← Prev
+              </button>
+              
+              <div className="carousel-card-wrapper">
+                <DepartmentScoreCard
+                  name={departments[currentIndex].name}
+                  score={departments[currentIndex].score}
+                  stats={departments[currentIndex].stats}
+                />
+              </div>
+
+              <button 
+                className="btn btn-secondary carousel-btn" 
+                onClick={handleNext}
+                aria-label="Next Department"
+              >
+                Next →
+              </button>
+            </div>
+            
+            <div className="carousel-indicator">
+              {currentIndex + 1} of {departments.length}
+            </div>
+          </div>
+        ) : (
+          <div className="empty-state">No departments found.</div>
         )}
       </div>
+
+      <style>{`
+        .slider-container {
+          max-width: 600px;
+          margin: 0 auto;
+          text-align: center;
+        }
+        .dropdown-wrapper {
+          margin-bottom: 24px;
+        }
+        .carousel {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+        }
+        .carousel-btn {
+          padding: 8px 16px;
+          border-radius: 50px;
+          font-weight: bold;
+        }
+        .carousel-card-wrapper {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          max-width: 400px;
+        }
+        .carousel-card-wrapper > div {
+          width: 100%;
+        }
+        .carousel-indicator {
+          margin-top: 16px;
+          font-size: 0.9rem;
+          color: var(--text-muted);
+        }
+      `}</style>
     </div>
   );
 }

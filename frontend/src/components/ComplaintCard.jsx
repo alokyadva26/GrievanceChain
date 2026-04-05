@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { shortenAddress, formatTimestamp, getStatusLabel, getSLARemaining } from "../utils/formatters";
 import { COMPLAINT_STATUS_COLORS } from "../constants/network";
 
-export default function ComplaintCard({ complaint }) {
+export default function ComplaintCard({ complaint, isAdminView, onDelete }) {
   const status = Number(complaint.status);
   const sla = getSLARemaining(complaint.responseDeadline);
 
@@ -48,9 +48,16 @@ export default function ComplaintCard({ complaint }) {
         </div>
       )}
 
-      <Link to={`/complaint/${Number(complaint.id)}`} className="btn btn-secondary btn-sm cc-view">
-        View Details →
-      </Link>
+      <div className="cc-actions">
+        <Link to={`/complaint/${Number(complaint.id)}`} className="btn btn-secondary btn-sm cc-view">
+          View Details →
+        </Link>
+        {isAdminView && (
+          <button onClick={onDelete} className="btn btn-danger btn-sm cc-view" style={{ marginTop: "8px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px" }}>
+            🗑️ Delete Record
+          </button>
+        )}
+      </div>
 
       <style>{`
         .complaint-card {
@@ -114,10 +121,14 @@ export default function ComplaintCard({ complaint }) {
           color: var(--accent-red);
           font-weight: 600;
         }
-        .cc-view {
+        .cc-actions {
           margin-top: 8px;
+        }
+        .cc-view {
           text-align: center;
           font-size: 0.85rem;
+          width: 100%;
+          display: block;
         }
       `}</style>
     </div>
