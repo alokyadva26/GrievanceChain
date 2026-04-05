@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DepartmentScoreCard from "../components/DepartmentScoreCard";
 import { getScoreLevel } from "../constants/network";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 export default function TransparencyDashboard({ contractHook }) {
   const [departments, setDepartments] = useState([]);
@@ -100,8 +101,44 @@ export default function TransparencyDashboard({ contractHook }) {
         {loading ? (
           <div className="spinner" />
         ) : departments.length > 0 ? (
-          <div className="slider-container animate-in">
-            {/* Dropdown Menu */}
+          <>
+            <div className="glass-card animate-in" style={{ padding: "24px", maxWidth: "800px", margin: "0 auto 32px" }}>
+              <h3 style={{ marginBottom: "16px", fontSize: "1.1rem", color: "var(--text-secondary)" }}>Department Corruption Scores</h3>
+              <div style={{ height: "300px", width: "100%" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={departments} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
+                    <XAxis 
+                      dataKey="name" 
+                      type="category" 
+                      tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
+                      interval={0} 
+                      angle={-35} 
+                      textAnchor="end" 
+                      height={70} 
+                    />
+                    <YAxis 
+                      type="number" 
+                      domain={[0, 100]} 
+                      stroke="var(--text-muted)" 
+                      tick={{ fill: "var(--text-secondary)", fontSize: 13 }} 
+                    />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} 
+                      contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
+                      formatter={(value) => [value, "Score"]}
+                    />
+                    <Bar dataKey="score" radius={[0, 4, 4, 0]}>
+                      {departments.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={getScoreLevel(entry.score).color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="slider-container animate-in">
+              {/* Dropdown Menu */}
             <div className="dropdown-wrapper">
               <label htmlFor="dept-select">Select Department: </label>
               <select 
@@ -148,6 +185,7 @@ export default function TransparencyDashboard({ contractHook }) {
               {currentIndex + 1} of {departments.length}
             </div>
           </div>
+          </>
         ) : (
           <div className="empty-state">No departments found.</div>
         )}
