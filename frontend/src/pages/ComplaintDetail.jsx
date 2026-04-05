@@ -192,22 +192,38 @@ export default function ComplaintDetail({ contractHook, account }) {
                 {rtiLoading ? "Generating..." : "Generate RTI Application"}
               </button>
               {rtiDoc && (
-                <pre style={{
-                  marginTop: "16px",
-                  padding: "16px",
-                  background: "var(--bg-secondary)",
-                  borderRadius: "var(--radius-sm)",
-                  color: "var(--text-secondary)",
-                  fontSize: "0.85rem",
-                  whiteSpace: "pre-wrap",
-                  maxHeight: "400px",
-                  overflow: "auto"
-                }}>
-                  {rtiDoc}
-                </pre>
+                <>
+                  <pre style={{
+                    marginTop: "16px",
+                    padding: "16px",
+                    background: "var(--bg-secondary)",
+                    borderRadius: "var(--radius-sm)",
+                    color: "var(--text-secondary)",
+                    fontSize: "0.85rem",
+                    whiteSpace: "pre-wrap",
+                    maxHeight: "400px",
+                    overflow: "auto"
+                  }}>
+                    {rtiDoc}
+                  </pre>
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    style={{ marginTop: "12px" }}
+                    onClick={() => {
+                      const blob = new Blob([rtiDoc], { type: "text/plain" });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = `RTI_Application_${id}.txt`;
+                      link.click();
+                    }}
+                  >
+                    📥 Download RTI (.txt)
+                  </button>
+                </>
               )}
-            </div>
           </div>
+        </div>
 
           {/* Sidebar */}
           <div>

@@ -17,7 +17,7 @@ function getClient() {
  */
 async function generateRTIDocument(complaint) {
   const client = getClient();
-  const model = client.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
 
   const prompt = `Convert the following complaint into a formal RTI (Right to Information) application under the RTI Act of India.\n\nComplaint: ${complaint}`;
 
