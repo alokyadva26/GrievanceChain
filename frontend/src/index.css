@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap');
 
 /* ─────────────── Design Tokens ─────────────── */
@@ -431,4 +435,17 @@ h4 { font-size: 1.25rem; font-weight: 600; }
   background: var(--bg-card) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-subtle) !important;
+}
+
+/* ─────────────── Light Mode Hack ─────────────── */
+html.light-mode {
+  filter: invert(1) hue-rotate(180deg) brightness(1.05) contrast(0.95);
+}
+
+html.light-mode img,
+html.light-mode video,
+html.light-mode iframe,
+html.light-mode .brand-icon,
+html.light-mode .wallet-dot {
+  filter: invert(1) hue-rotate(180deg);
 }

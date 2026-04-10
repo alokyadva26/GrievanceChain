@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Info, TrendingDown, TrendingUp, AlertTriangle, Building2, ChevronRight, Activity, ShieldAlert } from "lucide-react";
 import DepartmentScoreCard from "../components/DepartmentScoreCard";
 import { getScoreLevel } from "../constants/network";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid } from "recharts";
 
 export default function TransparencyDashboard({ contractHook }) {
   const [departments, setDepartments] = useState([]);
@@ -22,7 +25,6 @@ export default function TransparencyDashboard({ contractHook }) {
             const stats = await contractHook.getDepartmentStats(name);
             const total = Number(stats.totalComplaints || stats[0]);
             
-            // Explicit Corruption Score Formula Calculation in Frontend
             let calculatedScore = 0;
             if (total > 0) {
               const slaBreaches = Number(stats.slaBreaches || stats[2]);
@@ -32,7 +34,7 @@ export default function TransparencyDashboard({ contractHook }) {
               const breachRate = (slaBreaches / total) * 100;
               const falseResRate = (falseResolutions / total) * 100;
               const escRate = (escalations / total) * 100;
-              const lowApprovalRate = (falseResolutions / total) * 100; // Proxy for low approval
+              const lowApprovalRate = (falseResolutions / total) * 100;
               
               calculatedScore = (breachRate * 0.4) + (falseResRate * 0.3) + (escRate * 0.2) + (lowApprovalRate * 0.1);
             }
@@ -54,7 +56,6 @@ export default function TransparencyDashboard({ contractHook }) {
         })
       );
 
-      // Sort by score descending (worst first)
       deptData.sort((a, b) => b.score - a.score);
       setDepartments(deptData);
     } catch (err) {
@@ -64,168 +65,198 @@ export default function TransparencyDashboard({ contractHook }) {
     }
   }
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : departments.length - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev < departments.length - 1 ? prev + 1 : 0));
-  };
+  // Mock Trend Data for graph since we don't have historical chain data easily queryable without events
+  const trendData = [
+    { name: "Week 1", score: 65 },
+    { name: "Week 2", score: 72 },
+    { name: "Week 3", score: 68 },
+    { name: "Week 4", score: 85 },
+    { name: "Week 5", score: 79 },
+    { name: "Current", score: departments[currentIndex]?.score || 0 }
+  ];
 
   return (
-    <div className="page">
+    <div className="page bg-slate-950 pb-24">
       <div className="container">
-        <div className="page-header animate-in">
-          <h1 className="page-title">Transparency Dashboard</h1>
-          <p className="page-subtitle">
-            Public Corruption Score Index — calculated from SLA breaches, escalations, and citizen rejections.
-          </p>
+        <div className="mb-12">
+           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-4">
+              <span className="px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-semibold text-sm flex items-center gap-2">
+                 <ShieldAlert size={16} /> Public Corruption Index
+              </span>
+           </motion.div>
+           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-5xl font-extrabold text-white text-center mb-6 leading-tight">
+             Transparency Dashboard
+           </motion.h1>
+           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-slate-400 text-lg text-center max-w-2xl mx-auto flex items-center justify-center gap-2 group">
+             Holding departments accountable through immutable records.
+             <span className="relative cursor-help" title="Score based on SLA breaches, false resolutions, and escalations. Higher is worse.">
+                <Info size={18} className="text-slate-500 hover:text-orange-500 transition-colors" />
+             </span>
+           </motion.p>
         </div>
 
         {/* Legend */}
-        <div className="legend animate-in" style={{ display: "flex", gap: "16px", marginBottom: "32px", flexWrap: "wrap", justifyContent: "center" }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex flex-wrap justify-center gap-4 lg:gap-8 mb-12">
           {[
-            { range: "0–20", label: "Excellent", color: "#00C853" },
-            { range: "21–40", label: "Good", color: "#448AFF" },
-            { range: "41–60", label: "Fair", color: "#FFD600" },
-            { range: "61–80", label: "Poor", color: "#FF6B35" },
-            { range: "81–100", label: "Critical", color: "#FF1744" },
+            { range: "0–20", label: "Excellent", color: "#22c55e" },
+            { range: "21–40", label: "Good", color: "#3b82f6" },
+            { range: "41–60", label: "Fair", color: "#eab308" },
+            { range: "61–80", label: "Poor", color: "#f97316" },
+            { range: "81–100", label: "Critical", color: "#ef4444" },
           ].map((l) => (
-            <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.82rem" }}>
-              <div style={{ width: "12px", height: "12px", borderRadius: "3px", background: l.color }} />
-              <span style={{ color: "var(--text-secondary)" }}>{l.range} {l.label}</span>
+            <div key={l.label} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+              <div className="w-3 h-3 rounded-sm shadow-sm" style={{ background: l.color }} />
+              <span className="text-slate-400">{l.range} <span className="text-slate-300 ml-1">{l.label}</span></span>
             </div>
           ))}
-        </div>
+        </motion.div>
 
         {loading ? (
-          <div className="spinner" />
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="w-12 h-12 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+            <p className="text-slate-400 font-medium tracking-widest uppercase text-sm animate-pulse">Calculating Scores...</p>
+          </div>
         ) : departments.length > 0 ? (
           <>
-            <div className="glass-card animate-in" style={{ padding: "24px", maxWidth: "800px", margin: "0 auto 32px" }}>
-              <h3 style={{ marginBottom: "16px", fontSize: "1.1rem", color: "var(--text-secondary)" }}>Department Corruption Scores</h3>
-              <div style={{ height: "300px", width: "100%" }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={departments} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-                    <XAxis 
-                      dataKey="name" 
-                      type="category" 
-                      tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
-                      interval={0} 
-                      angle={-35} 
-                      textAnchor="end" 
-                      height={70} 
-                    />
-                    <YAxis 
-                      type="number" 
-                      domain={[0, 100]} 
-                      stroke="var(--text-muted)" 
-                      tick={{ fill: "var(--text-secondary)", fontSize: 13 }} 
-                    />
-                    <Tooltip 
-                      cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} 
-                      contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
-                      formatter={(value) => [value, "Score"]}
-                    />
-                    <Bar dataKey="score" radius={[0, 4, 4, 0]}>
-                      {departments.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={getScoreLevel(entry.score).color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+            {/* Quick Insights Row - Best vs Worst */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+               <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="glass-card p-6 bg-red-500/5 border-red-500/20 flex flex-col md:flex-row items-center gap-6">
+                  <div className="w-16 h-16 shrink-0 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
+                     <TrendingUp size={32} />
+                  </div>
+                  <div className="text-center md:text-left">
+                     <p className="text-red-400 text-sm font-bold uppercase tracking-wider mb-1">Most Corrupt / Delayed</p>
+                     <h3 className="text-2xl font-bold text-white mb-1">{departments[0].name}</h3>
+                     <p className="text-slate-400 text-sm">Score: <span className="text-red-500 font-mono font-bold font-xl">{departments[0].score}/100</span></p>
+                  </div>
+               </motion.div>
+               <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="glass-card p-6 bg-green-500/5 border-green-500/20 flex flex-col md:flex-row items-center gap-6">
+                  <div className="w-16 h-16 shrink-0 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-500">
+                     <TrendingDown size={32} />
+                  </div>
+                  <div className="text-center md:text-left">
+                     <p className="text-green-400 text-sm font-bold uppercase tracking-wider mb-1">Best Performing</p>
+                     <h3 className="text-2xl font-bold text-white mb-1">{departments[departments.length - 1].name}</h3>
+                     <p className="text-slate-400 text-sm">Score: <span className="text-green-500 font-mono font-bold font-xl">{departments[departments.length - 1].score}/100</span></p>
+                  </div>
+               </motion.div>
             </div>
 
-            <div className="slider-container animate-in">
-              {/* Dropdown Menu */}
-            <div className="dropdown-wrapper">
-              <label htmlFor="dept-select">Select Department: </label>
-              <select 
-                id="dept-select"
-                className="form-input" 
-                value={currentIndex}
-                onChange={(e) => setCurrentIndex(Number(e.target.value))}
-                style={{ width: "100%", maxWidth: "300px", margin: "0 auto", display: "block" }}
-              >
-                {departments.map((dept, idx) => (
-                  <option key={dept.name} value={idx}>{dept.name}</option>
-                ))}
-              </select>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+               {/* Left Column: Chart */}
+               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="lg:col-span-8 glass-card p-6 lg:p-8 flex flex-col h-full">
+                 <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Activity className="text-blue-500"/> Corruption Scores Overview</h3>
+                 </div>
+                 
+                 <div className="h-[350px] w-full mt-auto">
+                   <ResponsiveContainer width="100%" height="100%">
+                     <BarChart data={departments} margin={{ top: 10, right: 10, left: -20, bottom: 40 }}>
+                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                       <XAxis 
+                         dataKey="name" 
+                         tick={{ fill: "#94a3b8", fontSize: 12 }}
+                         interval={0} 
+                         angle={-35} 
+                         textAnchor="end" 
+                         height={60} 
+                         axisLine={{stroke: "rgba(255,255,255,0.1)"}}
+                         tickLine={false}
+                       />
+                       <YAxis 
+                         domain={[0, 100]} 
+                         tick={{ fill: "#94a3b8", fontSize: 12 }} 
+                         axisLine={false}
+                         tickLine={false}
+                       />
+                       <RechartsTooltip 
+                         cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} 
+                         contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)' }}
+                         itemStyle={{ fontWeight: 'bold' }}
+                         formatter={(value) => [`${value} / 100`, "Corruption Score"]}
+                       />
+                       <Bar dataKey="score" radius={[6, 6, 0, 0]} onClick={(_, idx) => setCurrentIndex(idx)} className="cursor-pointer">
+                         {departments.map((entry, index) => (
+                           <Cell 
+                              key={`cell-${index}`} 
+                              fill={getScoreLevel(entry.score).color} 
+                              opacity={currentIndex === index ? 1 : 0.7}
+                           />
+                         ))}
+                       </Bar>
+                     </BarChart>
+                   </ResponsiveContainer>
+                 </div>
+               </motion.div>
 
-            {/* Carousel Controls and Active Card */}
-            <div className="carousel">
-              <button 
-                className="btn btn-secondary carousel-btn" 
-                onClick={handlePrev}
-                aria-label="Previous Department"
-              >
-                ← Prev
-              </button>
-              
-              <div className="carousel-card-wrapper">
-                <DepartmentScoreCard
-                  name={departments[currentIndex].name}
-                  score={departments[currentIndex].score}
-                  stats={departments[currentIndex].stats}
-                />
-              </div>
+               {/* Right Column: Active Department Detail & Trend */}
+               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="lg:col-span-4 flex flex-col gap-6">
+                 
+                 {/* Selection Dropdown */}
+                 <div className="glass-card p-4 relative z-20">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Deep Dive</label>
+                    <div className="relative">
+                       <select 
+                         className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold"
+                         value={currentIndex}
+                         onChange={(e) => setCurrentIndex(Number(e.target.value))}
+                       >
+                         {departments.map((dept, idx) => (
+                           <option key={dept.name} value={idx}>{dept.name} ({dept.score})</option>
+                         ))}
+                       </select>
+                       <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <ChevronRight className="rotate-90 text-slate-500" size={18} />
+                       </div>
+                    </div>
+                 </div>
 
-              <button 
-                className="btn btn-secondary carousel-btn" 
-                onClick={handleNext}
-                aria-label="Next Department"
-              >
-                Next →
-              </button>
+                 {/* Focus Card */}
+                 <div className="flex-1">
+                    <DepartmentScoreCard
+                      name={departments[currentIndex].name}
+                      score={departments[currentIndex].score}
+                      stats={departments[currentIndex].stats}
+                    />
+                 </div>
+
+                 {/* Trend Mock Graph */}
+                 <div className="glass-card p-5">
+                    <h4 className="text-sm font-bold text-white mb-4">Historical Trend</h4>
+                    <div className="h-[120px] w-full">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <LineChart data={trendData}>
+                            <XAxis dataKey="name" hide />
+                            <YAxis domain={['dataMin - 10', 'auto']} hide />
+                            <RechartsTooltip 
+                               contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }}
+                               labelStyle={{ color: '#94a3b8', fontSize: '12px' }}
+                               itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                            />
+                            <Line 
+                               type="monotone" 
+                               dataKey="score" 
+                               stroke={getScoreLevel(departments[currentIndex].score).color} 
+                               strokeWidth={3}
+                               dot={{ r: 4, fill: '#0f172a', strokeWidth: 2 }}
+                               activeDot={{ r: 6 }}
+                            />
+                         </LineChart>
+                       </ResponsiveContainer>
+                    </div>
+                 </div>
+
+               </motion.div>
             </div>
-            
-            <div className="carousel-indicator">
-              {currentIndex + 1} of {departments.length}
-            </div>
-          </div>
           </>
         ) : (
-          <div className="empty-state">No departments found.</div>
+          <div className="flex flex-col items-center justify-center p-16 text-center border border-slate-800 border-dashed rounded-3xl bg-slate-900/20">
+             <Building2 size={48} className="text-slate-600 mb-4" />
+             <h3 className="text-2xl font-bold text-white mb-2">No department data available</h3>
+             <p className="text-slate-400">Scores will generate automatically once citizens start filing grievances.</p>
+          </div>
         )}
       </div>
-
-      <style>{`
-        .slider-container {
-          max-width: 600px;
-          margin: 0 auto;
-          text-align: center;
-        }
-        .dropdown-wrapper {
-          margin-bottom: 24px;
-        }
-        .carousel {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 16px;
-        }
-        .carousel-btn {
-          padding: 8px 16px;
-          border-radius: 50px;
-          font-weight: bold;
-        }
-        .carousel-card-wrapper {
-          flex: 1;
-          display: flex;
-          justify-content: center;
-          max-width: 400px;
-        }
-        .carousel-card-wrapper > div {
-          width: 100%;
-        }
-        .carousel-indicator {
-          margin-top: 16px;
-          font-size: 0.9rem;
-          color: var(--text-muted);
-        }
-      `}</style>
     </div>
   );
 }

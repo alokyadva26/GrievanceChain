@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Sun, Moon } from "lucide-react";
 import { shortenAddress } from "../utils/formatters";
 
 const NAV_LINKS = [
@@ -12,6 +13,17 @@ const NAV_LINKS = [
 
 export default function Navbar({ account, isCorrectNetwork, onConnect, onSwitchNetwork, isConnecting }) {
   const location = useLocation();
+  const [isLightMode, setIsLightMode] = React.useState(
+    () => document.documentElement.classList.contains("light-mode")
+  );
+
+  React.useEffect(() => {
+    if (isLightMode) {
+      document.documentElement.classList.add("light-mode");
+    } else {
+      document.documentElement.classList.remove("light-mode");
+    }
+  }, [isLightMode]);
 
   return (
     <nav className="navbar">
@@ -34,6 +46,15 @@ export default function Navbar({ account, isCorrectNetwork, onConnect, onSwitchN
         </div>
 
         <div className="navbar-wallet">
+          <button 
+            onClick={() => setIsLightMode(!isLightMode)}
+            className="btn btn-secondary btn-sm"
+            style={{ padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px" }}
+            title="Toggle Theme"
+          >
+            {isLightMode ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
+          
           {account ? (
             <>
               {!isCorrectNetwork && (
