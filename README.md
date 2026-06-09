@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # GrievanceChain 🛡️⛓️
 
 A tamper-proof public grievance redressal platform where citizens file complaints against government departments. Complaints are permanently stored on the blockchain — officials cannot delete, modify, or falsely close them.
@@ -114,7 +113,3 @@ npm run dev
 ## License
 
 MIT
-=======
-# GrievanceChain
-GrievanceChain is a smart web app that uses blockchain and AI to improve complaint systems. It ensures complaints are secure, transparent, and cannot be changed. AI helps sort and prioritize issues, while users can track progress in real time, making the system efficient, trustworthy, and user-friendly.
-
