@@ -177,6 +177,11 @@ h4 { font-size: 1.25rem; font-weight: 600; }
   box-shadow: 0 4px 15px var(--accent-red-glow);
 }
 
+.btn-danger:hover:not(:disabled) {
+  box-shadow: 0 6px 25px var(--accent-red-glow);
+  transform: translateY(-2px);
+}
+
 .btn-sm {
   padding: 8px 16px;
   font-size: 0.8rem;
