@@ -14,7 +14,7 @@ export function formatTimestamp(ts) {
  * Format an address: 0x1234...abcd
  */
 export function shortenAddress(addr) {
-  if (!addr) return "";
+  if (!addr || addr.length < 10) return addr || "";
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
