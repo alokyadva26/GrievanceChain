@@ -31,7 +31,7 @@ app.use("/api/departments", departmentRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
+  console.error(`[Backend Error] ${err.message}`, err.stack);
   res.status(500).json({ error: "Internal server error" });
 });
 // Start background services
