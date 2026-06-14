@@ -5,6 +5,7 @@ require("dotenv").config();
 const ipfsRoutes = require("./routes/ipfs.routes");
 const aiRoutes = require("./routes/ai.routes");
 const departmentRoutes = require("./routes/department.routes");
+const escalationService = require("./services/escalation.service");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -33,6 +34,8 @@ app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Internal server error" });
 });
+// Start background services
+escalationService.start();
 
 app.listen(PORT, "127.0.0.1", () => {
   console.log(`\n🚀 GrievanceChain Backend running on port ${PORT}`);

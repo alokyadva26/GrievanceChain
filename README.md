@@ -117,4 +117,4 @@ MIT
 =======
 # GrievanceChain
 GrievanceChain is a smart web app that uses blockchain and AI to improve complaint systems. It ensures complaints are secure, transparent, and cannot be changed. AI helps sort and prioritize issues, while users can track progress in real time, making the system efficient, trustworthy, and user-friendly.
->>>>>>> e8d55e9148752957174b3d93bd40c3afc28cc5f2
+

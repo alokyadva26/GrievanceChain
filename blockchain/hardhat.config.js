@@ -1,29 +1,15 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config(); // 👈 This line is the "Magic Fix"
 
-try {
-  require("dotenv").config({ path: "../.env" });
-} catch (e) {}
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: {
-    version: "0.8.24",
-    settings: {
-      viaIR: true,
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
-  },
+  solidity: "0.8.20", // Use your actual version
   networks: {
-    hardhat: {
-      chainId: 1337
-    },
     baseSepolia: {
-      url: process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 84532
-    }
-  }
+      url: "https://sepolia.base.org", // Or your Alchemy/Infura URL
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+    },
+  },
 };
